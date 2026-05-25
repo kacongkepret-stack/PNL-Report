@@ -68,8 +68,8 @@ export default function InputDataForm() {
   // 1. VERIFIKASI SESI LOGIN
   useEffect(() => {
     const role = localStorage.getItem('userRole');
-    const propId = localStorage.getItem('propertyId');
-    const propName = localStorage.getItem('propertyName');
+    const propId = localStorage.getItem('propertyId') || '';
+    const propName = localStorage.getItem('propertyName') || '';
 
     if (!role) {
       router.push('/login');
