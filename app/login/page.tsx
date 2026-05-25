@@ -44,7 +44,7 @@ export default function LoginPage() {
     localStorage.setItem('userRole', profileData.role);
     if (profileData.property_id) {
       localStorage.setItem('propertyId', profileData.property_id);
-      localStorage.setItem('propertyName', profileData.properties?.name || '');
+      localStorage.setItem('propertyName', profileData.properties?.[0]?.name || '');
     }
 
     router.push('/dashboard');
