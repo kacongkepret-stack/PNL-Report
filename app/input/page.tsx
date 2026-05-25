@@ -48,7 +48,6 @@ export default function InputDataForm() {
   const [propList, setPropList] = useState<any[]>([]);
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
 
-  // Tahun dinamis
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 9 }, (_, i) => currentYear - 3 + i);
   const monthNames = [
@@ -60,12 +59,11 @@ export default function InputDataForm() {
     year: currentYear,
     month: 1,
     stat_avail_act: 0, stat_avail_bud: 0, stat_sold_act: 0, stat_sold_bud: 0, stat_pax_act: 0, stat_pax_bud: 0,
-    rev_room_actual: 0, rev_room_budget: 0, rev_fb_actual: 0, rev_fb_budget: 0, rev_meeting_actual: 0, rev_meeting_budget: 0, rev_others_actual: 0, rev_others_budget: 0,
+    rev_room_actual: 0, rev_room_budget: 0, rev_fb_actual: 0, rev_fb_budget: 0, rev_meeting_actual: 0, rev_meeting_budget: 0, rev_spa_actual: 0, rev_spa_budget: 0, rev_others_actual: 0, rev_others_budget: 0,
     cost_fb_actual: 0, cost_fb_budget: 0, exp_payroll_actual: 0, exp_payroll_budget: 0, exp_general_actual: 0, exp_general_budget: 0, pay_admin_act: 0, pay_admin_bud: 0,
     oth_admin_act: 0, oth_admin_bud: 0, exp_energy_actual: 0, exp_energy_budget: 0, gop_act: 0, gop_bud: 0, non_operating_actual: 0, non_operating_budget: 0
   });
 
-  // 1. VERIFIKASI SESI LOGIN
   useEffect(() => {
     const role = localStorage.getItem('userRole');
     const propId = localStorage.getItem('propertyId') || '';
@@ -93,7 +91,6 @@ export default function InputDataForm() {
     }
   }, [router]);
 
-  // 2. TARIK DATA BERDASARKAN HOTEL, TAHUN, DAN BULAN
   const fetchData = useCallback(async () => {
     if (!activePropId) return;
 
@@ -111,7 +108,7 @@ export default function InputDataForm() {
       setFormData((prev: any) => ({
         year: prev.year, month: prev.month,
         stat_avail_act: 0, stat_avail_bud: 0, stat_sold_act: 0, stat_sold_bud: 0, stat_pax_act: 0, stat_pax_bud: 0,
-        rev_room_actual: 0, rev_room_budget: 0, rev_fb_actual: 0, rev_fb_budget: 0, rev_meeting_actual: 0, rev_meeting_budget: 0, rev_others_actual: 0, rev_others_budget: 0,
+        rev_room_actual: 0, rev_room_budget: 0, rev_fb_actual: 0, rev_fb_budget: 0, rev_meeting_actual: 0, rev_meeting_budget: 0, rev_spa_actual: 0, rev_spa_budget: 0, rev_others_actual: 0, rev_others_budget: 0,
         cost_fb_actual: 0, cost_fb_budget: 0, exp_payroll_actual: 0, exp_payroll_budget: 0, exp_general_actual: 0, exp_general_budget: 0, pay_admin_act: 0, pay_admin_bud: 0,
         oth_admin_act: 0, oth_admin_bud: 0, exp_energy_actual: 0, exp_energy_budget: 0, gop_act: 0, gop_bud: 0, non_operating_actual: 0, non_operating_budget: 0
       }));
@@ -196,9 +193,7 @@ export default function InputDataForm() {
           </div>
         </div>
 
-        {/* MAIN GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-          {/* KOLOM KIRI */}
           <div className="space-y-6">
             <ColumnHeader />
             <div>
@@ -212,11 +207,11 @@ export default function InputDataForm() {
               <InputRow label="Room Revenue" nameAct="rev_room_actual" nameBud="rev_room_budget" formData={formData} handleChange={handleChange} />
               <InputRow label="F&B Revenue" nameAct="rev_fb_actual" nameBud="rev_fb_budget" formData={formData} handleChange={handleChange} />
               <InputRow label="Meeting Revenue" nameAct="rev_meeting_actual" nameBud="rev_meeting_budget" formData={formData} handleChange={handleChange} />
+              <InputRow label="Spa Revenue" nameAct="rev_spa_actual" nameBud="rev_spa_budget" formData={formData} handleChange={handleChange} />
               <InputRow label="Other Revenue" nameAct="rev_others_actual" nameBud="rev_others_budget" formData={formData} handleChange={handleChange} />
             </div>
           </div>
 
-          {/* KOLOM KANAN */}
           <div className="space-y-6">
             <ColumnHeader />
             <div>
@@ -233,14 +228,12 @@ export default function InputDataForm() {
           </div>
         </div>
 
-        {/* NOTIFIKASI STATUS */}
         {status.msg && (
           <div className={`mt-8 p-4 text-sm font-bold flex items-center gap-3 rounded-lg border ${status.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : status.type === 'loading' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
             {status.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />} {status.msg}
           </div>
         )}
 
-        {/* SUBMIT BUTTON */}
         <button type="submit" disabled={isSubmitting} className="w-full mt-8 bg-slate-900 hover:bg-sky-700 text-white font-black py-4 rounded-lg transition-all uppercase text-sm tracking-widest shadow-xl flex justify-center items-center gap-2">
             {isSubmitting ? 'MEMPROSES DATA...' : `PUSH DATA ${activePropName.toUpperCase()} KE DATABASE`}
         </button>

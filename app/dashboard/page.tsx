@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -18,12 +17,12 @@ import {
   getAggregatedData, extractVal, formatRp, formatNum, monthsList, yearsList,
 } from "@/lib/aggregation";
 
-// ========== INDEX MENU ==========
 const indexMenuRev = [
   { id: "TOTAL_REVENUE", label: "TOTAL REVENUE" },
   { id: "ROOM", label: "ROOM REVENUE" },
   { id: "FB", label: "F&B REVENUE" },
   { id: "MEETING", label: "MEETING REVENUE" },
+  { id: "SPA", label: "SPA REVENUE" },
   { id: "OTHERS", label: "OTHER REVENUE" },
 ];
 const indexMenuCost = [
@@ -44,7 +43,7 @@ const indexMenuStat = [
 const ALL_DEPTS = [...indexMenuRev, ...indexMenuCost, ...indexMenuGop, ...indexMenuStat];
 
 const lblDept: Record<string, string> = {
-  TOTAL_REVENUE: "Total Revenue", ROOM: "Room Revenue", FB: "F&B Revenue", MEETING: "Meeting Revenue",
+  TOTAL_REVENUE: "Total Revenue", ROOM: "Room Revenue", FB: "F&B Revenue", MEETING: "Meeting Revenue", SPA: "Spa Revenue",
   OTHERS: "Other Revenue", COST_FB: "Cost of F&B", PAYROLL: "Payroll", OTHER_EXP: "Other Expenses",
   ENERGY: "Energy Cost", NON_OP: "Non Operating", GOP: "Gross Operating Profit", STAT_OCC: "Occupancy & Room Sold",
   STAT_ADR: "ADR (Avg Daily Rate)", STAT_REVPAR: "RevPAR", STAT_PAX: "Total Guest (Pax)",
@@ -52,7 +51,6 @@ const lblDept: Record<string, string> = {
 
 const PIE_COLORS = ["#ffc107", "#10b981"];
 
-// ========== UTILITY: LOGO LOADER DENGAN RETRIEVAL DIMENSI ASLI ==========
 interface LogoData {
   base64: string;
   width: number;
@@ -174,6 +172,15 @@ export default function Dashboard() {
   const isRpFormat = (dept: string) => !["STAT_OCC", "STAT_PAX"].includes(dept);
   const isCostOrGop = (dept: string) => ["COST_FB", "PAYROLL", "OTHER_EXP", "ENERGY", "NON_OP", "GOP"].includes(dept);
 
+  // AUTO DETECTION FACILITY
+  const hasMeetingFacility = useMemo(() => {
+    return dbData.some(d => d.property_id === activePropId && (Number(d.rev_meeting_actual) > 0 || Number(d.rev_meeting_budget) > 0));
+  }, [dbData, activePropId]);
+
+  const hasSpaFacility = useMemo(() => {
+    return dbData.some(d => d.property_id === activePropId && (Number(d.rev_spa_actual) > 0 || Number(d.rev_spa_budget) > 0));
+  }, [dbData, activePropId]);
+
   const renderDashboardPanel = (yearStr: string, isCompact: boolean) => {
     const data = getAggregatedData(yearStr, selectedMonth, isYTD, dbData, activePropId);
     const actualValue = extractVal(data, activeDept, false);
@@ -187,15 +194,16 @@ export default function Dashboard() {
         if (isYTD) {
           return monthsToShow.map((m) => {
             const mData = getAggregatedData(yearStr, m.value, false, dbData, activePropId);
-            return { name: m.label.substring(0, 3), Room: mData.rev_room_act || 0, "F&B": mData.rev_fb_act || 0, Meet: mData.rev_meet_act || 0, Others: mData.rev_oth_act || 0 };
+            return { name: m.label.substring(0, 3), Room: mData.rev_room_act || 0, "F&B": mData.rev_fb_act || 0, Meet: mData.rev_meet_act || 0, Spa: mData.rev_spa_act || 0, Others: mData.rev_oth_act || 0 };
           });
         } else {
           return [
-            { name: "Room", Actual: data.rev_room_act, Target: data.rev_room_bud },
-            { name: "F&B", Actual: data.rev_fb_act, Target: data.rev_fb_bud },
-            { name: "Meet", Actual: data.rev_meet_act, Target: data.rev_meet_bud },
-            { name: "Oth", Actual: data.rev_oth_act, Target: data.rev_oth_bud },
-          ];
+            { name: "Room", Actual: data.rev_room_act || 0, Target: data.rev_room_bud || 0 },
+            { name: "F&B", Actual: data.rev_fb_act || 0, Target: data.rev_fb_bud || 0 },
+            { name: "Meet", Actual: data.rev_meet_act || 0, Target: data.rev_meet_bud || 0, hide: !(data.rev_meet_act > 0 || data.rev_meet_bud > 0) },
+            { name: "Spa", Actual: data.rev_spa_act || 0, Target: data.rev_spa_bud || 0, hide: !(data.rev_spa_act > 0 || data.rev_spa_bud > 0) },
+            { name: "Oth", Actual: data.rev_oth_act || 0, Target: data.rev_oth_bud || 0 },
+          ].filter(d => !d.hide);
         }
       }
       if (!isYTD) {
@@ -245,7 +253,8 @@ export default function Dashboard() {
             <div className="border-t border-slate-100 pt-2 space-y-1">
               <div className="flex justify-between text-[9px]"><span>Room Revenue</span><span className="font-bold">{formatRp(data.rev_room_act)}</span></div>
               <div className="flex justify-between text-[9px]"><span>F&B Revenue</span><span className="font-bold">{formatRp(data.rev_fb_act)}</span></div>
-              <div className="flex justify-between text-[9px]"><span>Meeting Revenue</span><span className="font-bold">{formatRp(data.rev_meet_act)}</span></div>
+              {(data.rev_meet_act > 0 || data.rev_meet_bud > 0) && <div className="flex justify-between text-[9px]"><span>Meeting Revenue</span><span className="font-bold">{formatRp(data.rev_meet_act)}</span></div>}
+              {(data.rev_spa_act > 0 || data.rev_spa_bud > 0) && <div className="flex justify-between text-[9px]"><span>Spa Revenue</span><span className="font-bold">{formatRp(data.rev_spa_act)}</span></div>}
               <div className="flex justify-between text-[9px]"><span>Other Revenue</span><span className="font-bold">{formatRp(data.rev_oth_act)}</span></div>
             </div>
           )}
@@ -287,7 +296,8 @@ export default function Dashboard() {
                   <>
                     <Bar dataKey="Room" name="Room" fill="#0ea5e9" barSize={10} radius={[2, 2, 0, 0]} />
                     <Bar dataKey="F&B" name="F&B" fill="#f59e0b" barSize={10} radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="Meet" name="Meeting" fill="#10b981" barSize={10} radius={[2, 2, 0, 0]} />
+                    {(data.rev_meet_act > 0 || data.rev_meet_bud > 0) && <Bar dataKey="Meet" name="Meeting" fill="#10b981" barSize={10} radius={[2, 2, 0, 0]} />}
+                    {(data.rev_spa_act > 0 || data.rev_spa_bud > 0) && <Bar dataKey="Spa" name="Spa" fill="#ec4899" barSize={10} radius={[2, 2, 0, 0]} />}
                     <Bar dataKey="Others" name="Others" fill="#8b5cf6" barSize={10} radius={[2, 2, 0, 0]} />
                   </>
                 ) : (
@@ -304,61 +314,49 @@ export default function Dashboard() {
     );
   };
 
-  // ========== DRAW PDF NATIVE HEADER DENGAN ASPEK RATIO PROPORSIONAL + LIGHT THEME ==========
   const drawPDFHeader = (pdf: jsPDF, pageNum: number, totalPages: number | string, logoData: LogoData | null) => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const monthLabel = monthsList.find((m) => m.value === selectedMonth)?.label || "";
     const periodeText = isYTD ? `YTD Jan - ${monthLabel} ${selectedYear}` : `${monthLabel} ${selectedYear}`;
 
-    // PERBAIKAN: Mengubah Background Header Menjadi Putih Bersih (Light Corporate Theme)
     pdf.setFillColor(255, 255, 255); 
     pdf.rect(0, 0, pageWidth, 28, "F");
-    
-    // Garis Batas Atas Tebal (Dark Navy Accent)
     pdf.setFillColor(15, 23, 42); 
     pdf.rect(0, 0, pageWidth, 2, "F");
-
-    // Garis Batas Bawah Tipis (Border Divider Slate)
     pdf.setFillColor(226, 232, 240); 
     pdf.rect(0, 27.5, pageWidth, 0.5, "F");
 
     let textStartX = 12;
 
-    // PERBAIKAN LOGO: Kalkulasi otomatis tinggi & lebar agar tidak gepeng/kegencet
     if (logoData) {
       try {
-        const maxBoundingHeight = 16; // Batas tinggi maksimum logo di header (dalam mm)
+        const maxBoundingHeight = 16; 
         const aspectRatio = logoData.width / logoData.height;
-        
         let calculatedWidth = maxBoundingHeight * aspectRatio;
         let calculatedHeight = maxBoundingHeight;
 
-        // Cegah logo horizontal terlalu lebar merusak teks judul
         if (calculatedWidth > 45) {
           calculatedWidth = 45;
           calculatedHeight = calculatedWidth / aspectRatio;
         }
 
-        // Posisi Y tengah otomatis di dalam wadah bar header setinggi 28mm
         const optimalYPos = (28 - calculatedHeight) / 2;
-
         pdf.addImage(logoData.base64, "PNG", 12, optimalYPos, calculatedWidth, calculatedHeight);
-        textStartX = 12 + calculatedWidth + 5; // Jarak dinamis teks dari logo
+        textStartX = 12 + calculatedWidth + 5; 
       } catch (e) {
         console.error("Gagal melakukan penempelan asset logo proporsional:", e);
       }
     }
 
-    // PERBAIKAN: Mengubah Warna Teks Menjadi Gelap Kontras Tinggi Agar Terbaca Sempurna
-    pdf.setTextColor(15, 23, 42); // slate-900
+    pdf.setTextColor(15, 23, 42); 
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(14);
     pdf.text(activePropName.toUpperCase(), textStartX, 13);
     
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(9);
-    pdf.setTextColor(100, 116, 139); // slate-500
+    pdf.setTextColor(100, 116, 139); 
     pdf.text("EXECUTIVE FINANCIAL SUMMARY", textStartX, 19);
     
     pdf.setFont("helvetica", "bold");
@@ -366,7 +364,6 @@ export default function Dashboard() {
     pdf.setTextColor(15, 23, 42); 
     pdf.text(periodeText.toUpperCase(), pageWidth - 12, 16, { align: "right" });
 
-    // Footer Dokumen
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(8);
     pdf.setTextColor(71, 85, 105); 
@@ -378,12 +375,10 @@ export default function Dashboard() {
     pdf.text(`Page ${pageNum} of ${totalPages}`, pageWidth - 12, pageHeight - 8, { align: "right" });
   };
 
-  // ========== EXPORT SINGLE CHART ==========
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
       const logoData = activePropLogo ? await loadLogoData(activePropLogo) : null;
-      
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const margin = 12;
@@ -391,7 +386,6 @@ export default function Dashboard() {
 
       drawPDFHeader(pdf, 1, 1, logoData);
 
-      // KPI Section Background
       pdf.setFillColor(248, 250, 252);
       pdf.rect(margin, yPos, pageWidth - (margin * 2), 22, "F");
       pdf.setDrawColor(226, 232, 240);
@@ -461,14 +455,21 @@ export default function Dashboard() {
     }
   };
 
-  // ========== EXPORT ALL 15 MODULES ==========
   const handleExportAllPDF = async () => {
     setIsExportingAll(true);
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const margin = 12;
     let pageNum = 1;
-    const totalEstPages = Math.ceil(ALL_DEPTS.length / 2);
+
+    // FILTER VALID DEPTS (Buang PDF Page Kosong jika fasilitas tidak ada)
+    const validDepts = ALL_DEPTS.filter(item => {
+      if (item.id === "MEETING" && !hasMeetingFacility) return false;
+      if (item.id === "SPA" && !hasSpaFacility) return false;
+      return true;
+    });
+
+    const totalEstPages = Math.ceil(validDepts.length / 2);
 
     const offScreenDiv = document.createElement("div");
     offScreenDiv.style.position = "absolute";
@@ -486,16 +487,15 @@ export default function Dashboard() {
     try {
       const logoData = activePropLogo ? await loadLogoData(activePropLogo) : null;
 
-      for (let i = 0; i < ALL_DEPTS.length; i += 2) {
-        const deptA = ALL_DEPTS[i];
-        const deptB = ALL_DEPTS[i + 1];
+      for (let i = 0; i < validDepts.length; i += 2) {
+        const deptA = validDepts[i];
+        const deptB = validDepts[i + 1];
         const mainData = getAggregatedData(selectedYear, selectedMonth, isYTD, dbData, activePropId);
 
         if (pageNum > 1) pdf.addPage();
         drawPDFHeader(pdf, pageNum, totalEstPages, logoData);
         pageNum++;
 
-        // Render Panel A
         root.render(<ExportChartPanel data={mainData} deptId={deptA.id} yearStr={selectedYear} month={selectedMonth} isYTD={isYTD} dbData={dbData} activePropId={activePropId} height={420} />);
         await new Promise((resolve) => setTimeout(resolve, 300));
         let canvas = await html2canvas(offScreenDiv, { scale: 2, backgroundColor: "#ffffff", logging: false });
@@ -504,7 +504,6 @@ export default function Dashboard() {
         let imgHeight = (canvas.height * imgWidth) / canvas.width;
         pdf.addImage(imgData, "PNG", margin, 38, imgWidth, imgHeight);
 
-        // Render Panel B (Jika Ada)
         if (deptB) {
           root.render(<ExportChartPanel data={mainData} deptId={deptB.id} yearStr={selectedYear} month={selectedMonth} isYTD={isYTD} dbData={dbData} activePropId={activePropId} height={420} />);
           await new Promise((resolve) => setTimeout(resolve, 300));
@@ -526,7 +525,6 @@ export default function Dashboard() {
     }
   };
 
-  // ========== RENDER UTAMA ==========
   if (isAuthChecking) return <div className="min-h-screen flex items-center justify-center font-mono text-xs">Menyambungkan ke Node Hotel...</div>;
 
   return (
@@ -580,7 +578,15 @@ export default function Dashboard() {
       <div className={`grid grid-cols-1 lg:grid-cols-12 gap-4 2xl:gap-8 transition-opacity duration-300 ${isLoadingDB ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
         <div className="lg:col-span-2 space-y-2 border-r border-slate-200 pr-2 2xl:pr-4">
           <p className="text-[9px] 2xl:text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1.5 mb-2 2xl:mb-4">Menu Index</p>
-          <ul className="space-y-1">{indexMenuRev.map((item) => (<li key={item.id} onClick={() => setActiveDept(item.id)} className={`text-[9px] 2xl:text-[11px] font-black cursor-pointer px-2 py-1.5 2xl:px-3 2xl:py-2 rounded transition-all ${activeDept === item.id ? "bg-sky-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-100"}`}>{item.label}</li>))}</ul>
+          <ul className="space-y-1">
+            {indexMenuRev.map((item) => {
+              if (item.id === "MEETING" && !hasMeetingFacility) return null;
+              if (item.id === "SPA" && !hasSpaFacility) return null;
+              return (
+                <li key={item.id} onClick={() => setActiveDept(item.id)} className={`text-[9px] 2xl:text-[11px] font-black cursor-pointer px-2 py-1.5 2xl:px-3 2xl:py-2 rounded transition-all ${activeDept === item.id ? "bg-sky-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-100"}`}>{item.label}</li>
+              );
+            })}
+          </ul>
           <div className="my-2 2xl:my-3 border-t-2 border-dashed border-slate-200"></div>
           <ul className="space-y-1">{indexMenuCost.map((item) => (<li key={item.id} onClick={() => setActiveDept(item.id)} className={`text-[9px] 2xl:text-[11px] font-black cursor-pointer px-2 py-1.5 2xl:px-3 2xl:py-2 rounded transition-all ${activeDept === item.id ? "bg-sky-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-100"}`}>{item.label}</li>))}</ul>
           <div className="my-2 2xl:my-3 border-t-2 border-dashed border-slate-200"></div>
