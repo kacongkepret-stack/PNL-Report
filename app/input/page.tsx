@@ -39,25 +39,24 @@ const InputRow = ({
 
 export default function InputDataForm() {
   const router = useRouter();
-  const [status, setStatus] = useState({ type: '', message: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const [userRole, setUserRole] = useState('');
-  const [activePropId, setActivePropId] = useState('');
-  const [activePropName, setActivePropName] = useState('');
-  const [propList, setPropList] = useState([]);
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [status, setStatus] = useState<{ type: string; msg: string }>({ type: '', msg: '' });
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // --- Data dinamis untuk tahun dan bulan ---
+  const [userRole, setUserRole] = useState<string>('');
+  const [activePropId, setActivePropId] = useState<string>('');
+  const [activePropName, setActivePropName] = useState<string>('');
+  const [propList, setPropList] = useState<any[]>([]);
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+
+  // Tahun dinamis
   const currentYear = new Date().getFullYear();
-  // Tahun dari 3 tahun lalu hingga 5 tahun depan (bisa disesuaikan)
   const yearOptions = Array.from({ length: 9 }, (_, i) => currentYear - 3 + i);
   const monthNames = [
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
   ];
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     year: currentYear,
     month: 1,
     stat_avail_act: 0, stat_avail_bud: 0, stat_sold_act: 0, stat_sold_bud: 0, stat_pax_act: 0, stat_pax_bud: 0,
@@ -66,7 +65,7 @@ export default function InputDataForm() {
     oth_admin_act: 0, oth_admin_bud: 0, exp_energy_actual: 0, exp_energy_budget: 0, gop_act: 0, gop_bud: 0, non_operating_actual: 0, non_operating_budget: 0
   });
 
-  // 1. VERIFIKASI SESI LOGIN SAAT HALAMAN DIMUAT
+  // 1. VERIFIKASI SESI LOGIN
   useEffect(() => {
     const role = localStorage.getItem('userRole');
     const propId = localStorage.getItem('propertyId');
@@ -105,11 +104,11 @@ export default function InputDataForm() {
       .eq('year', formData.year)
       .eq('month', formData.month)
       .single();
-    
+
     if (data) {
-      setFormData(prev => ({ ...prev, ...data }));
+      setFormData((prev: any) => ({ ...prev, ...data }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev: any) => ({
         year: prev.year, month: prev.month,
         stat_avail_act: 0, stat_avail_bud: 0, stat_sold_act: 0, stat_sold_bud: 0, stat_pax_act: 0, stat_pax_bud: 0,
         rev_room_actual: 0, rev_room_budget: 0, rev_fb_actual: 0, rev_fb_budget: 0, rev_meeting_actual: 0, rev_meeting_budget: 0, rev_others_actual: 0, rev_others_budget: 0,
@@ -119,25 +118,25 @@ export default function InputDataForm() {
     }
   }, [formData.year, formData.month, activePropId]);
 
-  useEffect(() => { 
-    if (!isAuthChecking) fetchData(); 
+  useEffect(() => {
+    if (!isAuthChecking) fetchData();
   }, [fetchData, isAuthChecking]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: Number(value) }));
+    setFormData((prev: any) => ({ ...prev, [name]: Number(value) }));
   };
 
-  const handlePropertyChange = (e) => {
+  const handlePropertyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     setActivePropId(selectedId);
-    setActivePropName(propList.find(p => p.id === selectedId)?.name || '');
+    setActivePropName(propList.find((p: any) => p.id === selectedId)?.name || '');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setStatus({ type: 'loading', message: 'Menyinkronkan data dengan pusat...' });
+    setStatus({ type: 'loading', msg: 'Menyinkronkan data dengan pusat...' });
 
     const fullPayload = { ...formData, property_id: activePropId };
     const { id, created_at, updated_at, ...cleanPayload } = fullPayload;
@@ -147,9 +146,9 @@ export default function InputDataForm() {
       .upsert(cleanPayload, { onConflict: 'property_id,year,month' });
 
     if (error) {
-      setStatus({ type: 'error', message: `Gagal menyimpan: ${error.message}` });
+      setStatus({ type: 'error', msg: `Gagal menyimpan: ${error.message}` });
     } else {
-      setStatus({ type: 'success', message: `Laporan ${activePropName} (Bulan ${formData.month}/${formData.year}) Berhasil Disimpan!` });
+      setStatus({ type: 'success', msg: `Laporan ${activePropName} (Bulan ${formData.month}/${formData.year}) Berhasil Disimpan!` });
     }
     setIsSubmitting(false);
   };
@@ -176,20 +175,18 @@ export default function InputDataForm() {
                  onChange={handlePropertyChange} 
                  className="bg-sky-50 border border-sky-200 p-2 text-xs rounded-lg font-black text-sky-800 outline-none focus:border-sky-500 w-full md:w-64 cursor-pointer"
                >
-                 {propList.map(p => (
+                 {propList.map((p: any) => (
                    <option key={p.id} value={p.id}>{p.name}</option>
                  ))}
                </select>
             )}
 
             <div className="flex gap-2 bg-slate-100 p-1.5 rounded-lg border border-slate-200 w-full justify-end">
-              {/* Dropdown tahun dinamis */}
               <select name="year" value={formData.year} onChange={handleChange} className="bg-white border border-slate-300 p-1.5 text-xs rounded font-bold text-slate-800 outline-none cursor-pointer focus:border-sky-500">
                 {yearOptions.map(y => (
                   <option key={y} value={y}>{y}</option>
                 ))}
               </select>
-              {/* Dropdown bulan dengan nama asli */}
               <select name="month" value={formData.month} onChange={handleChange} className="bg-white border border-slate-300 p-1.5 text-xs rounded font-bold text-slate-800 outline-none cursor-pointer focus:border-sky-500">
                 {monthNames.map((name, idx) => (
                   <option key={idx} value={idx + 1}>{name}</option>
@@ -201,18 +198,15 @@ export default function InputDataForm() {
 
         {/* MAIN GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-          
           {/* KOLOM KIRI */}
           <div className="space-y-6">
             <ColumnHeader />
-            
             <div>
               <p className="text-[11px] font-black text-sky-600 uppercase mb-2 border-l-4 border-sky-600 pl-2 bg-sky-50 py-1">Statistik</p>
               <InputRow label="Room Available" nameAct="stat_avail_act" nameBud="stat_avail_bud" formData={formData} handleChange={handleChange} />
               <InputRow label="Room Sold" nameAct="stat_sold_act" nameBud="stat_sold_bud" formData={formData} handleChange={handleChange} />
               <InputRow label="Total Guest (Pax)" nameAct="stat_pax_act" nameBud="stat_pax_bud" formData={formData} handleChange={handleChange} />
             </div>
-            
             <div>
               <p className="text-[11px] font-black text-emerald-600 uppercase mb-2 border-l-4 border-emerald-600 pl-2 bg-emerald-50 py-1">Revenue</p>
               <InputRow label="Room Revenue" nameAct="rev_room_actual" nameBud="rev_room_budget" formData={formData} handleChange={handleChange} />
@@ -225,7 +219,6 @@ export default function InputDataForm() {
           {/* KOLOM KANAN */}
           <div className="space-y-6">
             <ColumnHeader />
-            
             <div>
               <p className="text-[11px] font-black text-red-600 uppercase mb-2 border-l-4 border-red-600 pl-2 bg-red-50 py-1">Biaya & Beban</p>
               <InputRow label="Cost of F&B" nameAct="cost_fb_actual" nameBud="cost_fb_budget" formData={formData} handleChange={handleChange} />
@@ -241,9 +234,9 @@ export default function InputDataForm() {
         </div>
 
         {/* NOTIFIKASI STATUS */}
-        {status.message && (
+        {status.msg && (
           <div className={`mt-8 p-4 text-sm font-bold flex items-center gap-3 rounded-lg border ${status.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : status.type === 'loading' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
-            {status.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />} {status.message}
+            {status.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />} {status.msg}
           </div>
         )}
 
