@@ -6,7 +6,7 @@ import { createNewProperty, updateProperty, createNewUser, uploadLogo } from './
 import { Building2, UserPlus, ShieldAlert, CheckCircle2, AlertCircle, Edit2, PlusCircle, UploadCloud } from 'lucide-react';
 
 export default function AdminControlTower() {
-  const [properties, setProperties] = useState([]);
+  const [properties, setProperties] = useState<any[]>([]);
   const fileInputRef = useRef(null);
   
   // STATE MODE FORM PROPERTY
