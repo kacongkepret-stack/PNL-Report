@@ -213,7 +213,7 @@ export default function Dashboard() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonthIndex = now.getMonth(); // 0 = Jan, 11 = Des
-// Bulan sebelumnya (jika Januari, mundur ke Desember tahun lalu)
+  // Bulan sebelumnya (jika Januari, mundur ke Desember tahun lalu)
   const prevMonthIndex = currentMonthIndex === 0 ? 11 : currentMonthIndex - 1;
   const prevMonthYear = currentMonthIndex === 0 ? currentYear - 1 : currentYear;
   const prevMonth = String(prevMonthIndex + 1).padStart(2, '0');
@@ -375,10 +375,15 @@ export default function Dashboard() {
     const budgetValue = extractVal(data, activeDept, true);
     const variance = actualValue - budgetValue;
 
+    // ✅ Bulan yang akan ditampilkan di grafik
+    const monthsToShow = isYTD
+      ? monthsList.slice(0, parseInt(selectedMonth))
+      : monthsList;
+
     const barChartData = (() => {
       if (activeDept === "TOTAL_REVENUE") {
         if (isYTD) {
-          return monthsList.map((m) => {
+          return monthsToShow.map((m) => {
             const mData = getAggregatedData(
               yearStr,
               m.value,
@@ -432,7 +437,7 @@ export default function Dashboard() {
         ];
       }
 
-      return monthsList.map((m) => {
+      return monthsToShow.map((m) => {
         const mData = getAggregatedData(
           yearStr,
           m.value,
