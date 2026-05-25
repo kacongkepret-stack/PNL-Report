@@ -106,11 +106,29 @@ const ExportChartPanel: React.FC<ExportChartPanelProps> = ({
     }
     return (
       <PieChart width={CHART_WIDTH} height={CHART_HEIGHT}>
-        <Pie data={pieChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" labelLine={false} isAnimationActive={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+        <Pie 
+          data={pieChartData} 
+          cx="50%" 
+          cy="50%" 
+          innerRadius={60} 
+          outerRadius={100} 
+          dataKey="value" 
+          labelLine={false} 
+          isAnimationActive={false} 
+          // FIX TYPESCRIPT ERROR: Bypass tipe data ketat dan berikan nilai default = 0
+          label={(props: any) => {
+            const { cx = 0, cy = 0, midAngle = 0, innerRadius = 0, outerRadius = 0, percent = 0 } = props;
             const RADIAN = Math.PI / 180;
             const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
             return (
-              <text x={cx + radius * Math.cos(-midAngle * RADIAN)} y={cy + radius * Math.sin(-midAngle * RADIAN)} fill="#ffffff" textAnchor="middle" dominantBaseline="central" style={{ fontSize: "14px", fontWeight: "bold" }}>
+              <text 
+                x={cx + radius * Math.cos(-midAngle * RADIAN)} 
+                y={cy + radius * Math.sin(-midAngle * RADIAN)} 
+                fill="#ffffff" 
+                textAnchor="middle" 
+                dominantBaseline="central" 
+                style={{ fontSize: "14px", fontWeight: "bold" }}
+              >
                 {(percent * 100).toFixed(0)}%
               </text>
             );
