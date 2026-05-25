@@ -752,7 +752,7 @@ export default function Dashboard() {
               </PieChart>
             ) : (
               <BarChart
-                data={barChartData}
+                data={barChartData as any[]}
                 margin={{ top: 0, right: 0, left: -15, bottom: 0 }}
                 barGap={4}
               >
