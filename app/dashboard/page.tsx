@@ -172,7 +172,6 @@ export default function Dashboard() {
   const isRpFormat = (dept: string) => !["STAT_OCC", "STAT_PAX"].includes(dept);
   const isCostOrGop = (dept: string) => ["COST_FB", "PAYROLL", "OTHER_EXP", "ENERGY", "NON_OP", "GOP"].includes(dept);
 
-  // AUTO DETECTION FACILITY
   const hasMeetingFacility = useMemo(() => {
     return dbData.some(d => d.property_id === activePropId && (Number(d.rev_meeting_actual) > 0 || Number(d.rev_meeting_budget) > 0));
   }, [dbData, activePropId]);
@@ -186,6 +185,7 @@ export default function Dashboard() {
     const actualValue = extractVal(data, activeDept, false);
     const budgetValue = extractVal(data, activeDept, true);
     const variance = actualValue - budgetValue;
+    const achPercent = budgetValue > 0 ? ((actualValue / budgetValue) * 100).toFixed(1) : "N/A";
 
     const monthsToShow = isYTD ? monthsList.slice(0, parseInt(selectedMonth)) : monthsList;
 
@@ -243,21 +243,73 @@ export default function Dashboard() {
             <div><p className="text-[8px] 2xl:text-[9px] text-slate-500 font-bold uppercase mb-0.5">Actual Result</p><p className={`${isCompact ? "text-sm" : "text-base 2xl:text-lg"} font-bold text-slate-950 truncate`}>{isRpFormat(activeDept) ? formatRp(actualValue) : formatNum(actualValue)}</p></div>
             <div><p className="text-[8px] 2xl:text-[9px] text-slate-500 font-bold uppercase mb-0.5">{activeDept === "STAT_OCC" ? "Target (Sold)" : "Budget Target"}</p><p className={`${isCompact ? "text-xs" : "text-sm 2xl:text-md"} font-bold text-slate-600 truncate`}>{isRpFormat(activeDept) ? formatRp(budgetValue) : formatNum(budgetValue)}</p></div>
           </div>
-          <div className="bg-slate-100 border border-slate-200 p-2 2xl:p-3 rounded-lg shadow-inner">
-            <p className="text-[8px] 2xl:text-[9px] text-slate-500 font-bold uppercase mb-0.5 tracking-tight">Variance (Act vs Bud)</p>
-            <p className={`text-sm 2xl:text-lg font-bold truncate ${variance >= 0 ? isCostOrGop(activeDept) && activeDept !== "GOP" ? "text-red-600" : "text-emerald-600" : isCostOrGop(activeDept) && activeDept !== "GOP" ? "text-emerald-600" : "text-red-600"}`}>
-              {variance >= 0 ? "+" : ""}{isRpFormat(activeDept) ? formatRp(variance) : formatNum(variance)}
-            </p>
+          <div className="grid grid-cols-2 gap-2 2xl:gap-3">
+            <div className="bg-slate-100 border border-slate-200 p-2 2xl:p-3 rounded-lg shadow-inner">
+              <p className="text-[8px] 2xl:text-[9px] text-slate-500 font-bold uppercase mb-0.5 tracking-tight">Variance (Act vs Bud)</p>
+              <p className={`text-sm 2xl:text-lg font-bold truncate ${variance >= 0 ? isCostOrGop(activeDept) && activeDept !== "GOP" ? "text-red-600" : "text-emerald-600" : isCostOrGop(activeDept) && activeDept !== "GOP" ? "text-emerald-600" : "text-red-600"}`}>
+                {variance >= 0 ? "+" : ""}{isRpFormat(activeDept) ? formatRp(variance) : formatNum(variance)}
+              </p>
+            </div>
+            <div className="bg-slate-100 border border-slate-200 p-2 2xl:p-3 rounded-lg shadow-inner">
+              <p className="text-[8px] 2xl:text-[9px] text-slate-500 font-bold uppercase mb-0.5 tracking-tight">% Achieved</p>
+              <p className={`text-sm 2xl:text-lg font-bold truncate ${achPercent !== "N/A" && Number(achPercent) >= 100 ? (isCostOrGop(activeDept) && activeDept !== "GOP" ? "text-red-600" : "text-emerald-600") : "text-slate-700"}`}>
+                {achPercent !== "N/A" ? `${achPercent}%` : "N/A"}
+              </p>
+            </div>
           </div>
           {activeDept === "TOTAL_REVENUE" && (
-            <div className="border-t border-slate-100 pt-2 space-y-1">
-              <div className="flex justify-between text-[9px]"><span>Room Revenue</span><span className="font-bold">{formatRp(data.rev_room_act)}</span></div>
-              <div className="flex justify-between text-[9px]"><span>F&B Revenue</span><span className="font-bold">{formatRp(data.rev_fb_act)}</span></div>
-              {(data.rev_meet_act > 0 || data.rev_meet_bud > 0) && <div className="flex justify-between text-[9px]"><span>Meeting Revenue</span><span className="font-bold">{formatRp(data.rev_meet_act)}</span></div>}
-              {(data.rev_spa_act > 0 || data.rev_spa_bud > 0) && <div className="flex justify-between text-[9px]"><span>Spa Revenue</span><span className="font-bold">{formatRp(data.rev_spa_act)}</span></div>}
-              <div className="flex justify-between text-[9px]"><span>Other Revenue</span><span className="font-bold">{formatRp(data.rev_oth_act)}</span></div>
-            </div>
-          )}
+  <div className="border-t border-slate-100 pt-2 space-y-1">
+    <div className="flex justify-between text-[9px]">
+      <span>Room Revenue</span>
+      <span className="font-bold">
+        {formatRp(data.rev_room_act)}{' '}
+        <span className="text-sky-600 font-bold">
+          ({data.totalRevAct > 0 ? ((data.rev_room_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+        </span>
+      </span>
+    </div>
+    <div className="flex justify-between text-[9px]">
+      <span>F&B Revenue</span>
+      <span className="font-bold">
+        {formatRp(data.rev_fb_act)}{' '}
+        <span className="text-sky-600 font-bold">
+          ({data.totalRevAct > 0 ? ((data.rev_fb_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+        </span>
+      </span>
+    </div>
+    {(data.rev_meet_act > 0 || data.rev_meet_bud > 0) && (
+      <div className="flex justify-between text-[9px]">
+        <span>Meeting Revenue</span>
+        <span className="font-bold">
+          {formatRp(data.rev_meet_act)}{' '}
+          <span className="text-sky-600 font-bold">
+            ({data.totalRevAct > 0 ? ((data.rev_meet_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+          </span>
+        </span>
+      </div>
+    )}
+    {(data.rev_spa_act > 0 || data.rev_spa_bud > 0) && (
+      <div className="flex justify-between text-[9px]">
+        <span>Spa Revenue</span>
+        <span className="font-bold">
+          {formatRp(data.rev_spa_act)}{' '}
+          <span className="text-sky-600 font-bold">
+            ({data.totalRevAct > 0 ? ((data.rev_spa_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+          </span>
+        </span>
+      </div>
+    )}
+    <div className="flex justify-between text-[9px]">
+      <span>Other Revenue</span>
+      <span className="font-bold">
+        {formatRp(data.rev_oth_act)}{' '}
+        <span className="text-sky-600 font-bold">
+          ({data.totalRevAct > 0 ? ((data.rev_oth_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+        </span>
+      </span>
+    </div>
+  </div>
+)}
           {activeDept === "STAT_OCC" && (
             <div className="border-t border-slate-100 pt-2 space-y-1 text-[9px]">
               <div className="flex justify-between"><span>Rooms Available (Act)</span><span className="font-bold">{formatNum(data.avail_act)}</span></div>
@@ -462,7 +514,6 @@ export default function Dashboard() {
     const margin = 12;
     let pageNum = 1;
 
-    // FILTER VALID DEPTS (Buang PDF Page Kosong jika fasilitas tidak ada)
     const validDepts = ALL_DEPTS.filter(item => {
       if (item.id === "MEETING" && !hasMeetingFacility) return false;
       if (item.id === "SPA" && !hasSpaFacility) return false;
