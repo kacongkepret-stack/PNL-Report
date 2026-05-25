@@ -51,7 +51,7 @@ export default function AdminControlTower() {
   }, []);
 
   // MENANGKAP FILE PICKER & MEMBUAT PRATINJAU LOKAL
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setLogoFile(file);
@@ -83,7 +83,7 @@ export default function AdminControlTower() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handlePropertySubmit = async (e) => {
+  const handlePropertySubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsUploading(true);
     setStatus({ type: 'loading', msg: 'Sedang memproses dokumen dan file gambar...' });
@@ -117,7 +117,7 @@ export default function AdminControlTower() {
     }
   };
 
-  const handleCreateUser = async (e) => {
+  const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       await createNewUser({ username, pass: password, role, propertyId: selectedProp });
