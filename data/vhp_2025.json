@@ -1,0 +1,15 @@
+{
+  "01": {
+    "revenue_room": 213965849,
+    "revenue_fb": 103824148,
+    "revenue_meeting": 49504131,
+    "revenue_others": 33097306,
+    "cost_fb": 40816045.739999995,
+    "expense_payroll": 193558663.09,
+    "expense_general": 99798401.8,
+    "expense_energy": 50553544,
+    "non_operating": 312278131.35,
+    "room_available": 3650,
+    "room_sold": 0
+  }
+}
