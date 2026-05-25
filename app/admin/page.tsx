@@ -103,13 +103,16 @@ export default function AdminControlTower() {
     setStatus({ type: 'loading', msg: 'Sedang memproses dokumen dan file gambar...' });
 
     try {
-      let finalLogoUrl = editingPropId ? currentSavedLogo : '';
+      let finalLogoUrl: string | null = editingPropId ? currentSavedLogo : '';
 
-      if (logoFile) {
-        const formData = new FormData();
-        formData.append('file', logoFile);
-        finalLogoUrl = await uploadLogo(formData);
-      }
+if (logoFile) {
+  const formData = new FormData();
+  formData.append('file', logoFile);
+  const uploadedUrl = await uploadLogo(formData);
+  if (uploadedUrl) {
+    finalLogoUrl = uploadedUrl;
+  }
+}
 
       const payload = {
         name: propName,
