@@ -46,7 +46,7 @@ const monthsList = [
   { value: "12", label: "Desember" },
 ];
 
-const yearsList: string[] = ["2024", "2025", "2026"];
+const yearsList: string[] = ["2025", "2026", "2027"];
 
 // Tipe untuk hasil agregasi (opsional, membantu pemahaman)
 type AggregatedData = {
