@@ -13,7 +13,19 @@ const ColumnHeader = () => (
   </div>
 );
 
-const InputRow = ({ label, nameAct, nameBud, formData, handleChange }) => (
+const InputRow = ({
+  label,
+  nameAct,
+  nameBud,
+  formData,
+  handleChange,
+}: {
+  label: string;
+  nameAct: string;
+  nameBud: string;
+  formData: any;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => (
   <div className="grid grid-cols-12 gap-2 items-center py-1.5 border-b border-slate-100 hover:bg-slate-50 transition-colors">
     <label className="col-span-4 text-[10px] font-bold text-slate-700 uppercase truncate pr-1">{label}</label>
     <div className="col-span-4">
