@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import {
-  Activity, Users, Briefcase, Percent, FileText, Database, Building2, Lock, LayoutGrid, Edit3, Settings, LogOut,
+  Activity, Users, Briefcase, Percent, FileText, Database, Lock, LayoutGrid, Edit3, Settings, LogOut,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -50,6 +50,28 @@ const lblDept: Record<string, string> = {
 };
 
 const PIE_COLORS = ["#ffc107", "#10b981"];
+
+const getDeptColor = (id: string): string => {
+  const colors: Record<string, string> = {
+    TOTAL_REVENUE: "#0f172a", 
+    ROOM: "#0ea5e9",          
+    FB: "#10b981",            
+    MEETING: "#8b5cf6",       
+    SPA: "#ec4899",           
+    OTHERS: "#f59e0b",        
+    COST_FB: "#ea580c",       
+    PAYROLL: "#dc2626",       
+    ENERGY: "#b45309",        
+    OTHER_EXP: "#64748b",     
+    NON_OP: "#7c2d12",        
+    GOP: "#4f46e5",           
+    STAT_OCC: "#06b6d4",      
+    STAT_ADR: "#0284c7",      
+    STAT_REVPAR: "#6366f1",   
+    STAT_PAX: "#14b8a6",      
+  };
+  return colors[id] || "#0f172a";
+};
 
 interface LogoData {
   base64: string;
@@ -188,6 +210,7 @@ export default function Dashboard() {
     const achPercent = budgetValue > 0 ? ((actualValue / budgetValue) * 100).toFixed(1) : "N/A";
 
     const monthsToShow = isYTD ? monthsList.slice(0, parseInt(selectedMonth)) : monthsList;
+    const dynamicBarColor = getDeptColor(activeDept);
 
     const barChartData = (() => {
       if (activeDept === "TOTAL_REVENUE") {
@@ -258,58 +281,58 @@ export default function Dashboard() {
             </div>
           </div>
           {activeDept === "TOTAL_REVENUE" && (
-  <div className="border-t border-slate-100 pt-2 space-y-1">
-    <div className="flex justify-between text-[9px]">
-      <span>Room Revenue</span>
-      <span className="font-bold">
-        {formatRp(data.rev_room_act)}{' '}
-        <span className="text-sky-600 font-bold">
-          ({data.totalRevAct > 0 ? ((data.rev_room_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
-        </span>
-      </span>
-    </div>
-    <div className="flex justify-between text-[9px]">
-      <span>F&B Revenue</span>
-      <span className="font-bold">
-        {formatRp(data.rev_fb_act)}{' '}
-        <span className="text-sky-600 font-bold">
-          ({data.totalRevAct > 0 ? ((data.rev_fb_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
-        </span>
-      </span>
-    </div>
-    {(data.rev_meet_act > 0 || data.rev_meet_bud > 0) && (
-      <div className="flex justify-between text-[9px]">
-        <span>Meeting Revenue</span>
-        <span className="font-bold">
-          {formatRp(data.rev_meet_act)}{' '}
-          <span className="text-sky-600 font-bold">
-            ({data.totalRevAct > 0 ? ((data.rev_meet_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
-          </span>
-        </span>
-      </div>
-    )}
-    {(data.rev_spa_act > 0 || data.rev_spa_bud > 0) && (
-      <div className="flex justify-between text-[9px]">
-        <span>Spa Revenue</span>
-        <span className="font-bold">
-          {formatRp(data.rev_spa_act)}{' '}
-          <span className="text-sky-600 font-bold">
-            ({data.totalRevAct > 0 ? ((data.rev_spa_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
-          </span>
-        </span>
-      </div>
-    )}
-    <div className="flex justify-between text-[9px]">
-      <span>Other Revenue</span>
-      <span className="font-bold">
-        {formatRp(data.rev_oth_act)}{' '}
-        <span className="text-sky-600 font-bold">
-          ({data.totalRevAct > 0 ? ((data.rev_oth_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
-        </span>
-      </span>
-    </div>
-  </div>
-)}
+            <div className="border-t border-slate-100 pt-2 space-y-1">
+              <div className="flex justify-between text-[9px]">
+                <span>Room Revenue</span>
+                <span className="font-bold">
+                  {formatRp(data.rev_room_act)}{' '}
+                  <span className="text-sky-600 font-bold">
+                    ({data.totalRevAct > 0 ? ((data.rev_room_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+                  </span>
+                </span>
+              </div>
+              <div className="flex justify-between text-[9px]">
+                <span>F&B Revenue</span>
+                <span className="font-bold">
+                  {formatRp(data.rev_fb_act)}{' '}
+                  <span className="text-sky-600 font-bold">
+                    ({data.totalRevAct > 0 ? ((data.rev_fb_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+                  </span>
+                </span>
+              </div>
+              {(data.rev_meet_act > 0 || data.rev_meet_bud > 0) && (
+                <div className="flex justify-between text-[9px]">
+                  <span>Meeting Revenue</span>
+                  <span className="font-bold">
+                    {formatRp(data.rev_meet_act)}{' '}
+                    <span className="text-sky-600 font-bold">
+                      ({data.totalRevAct > 0 ? ((data.rev_meet_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+                    </span>
+                  </span>
+                </div>
+              )}
+              {(data.rev_spa_act > 0 || data.rev_spa_bud > 0) && (
+                <div className="flex justify-between text-[9px]">
+                  <span>Spa Revenue</span>
+                  <span className="font-bold">
+                    {formatRp(data.rev_spa_act)}{' '}
+                    <span className="text-sky-600 font-bold">
+                      ({data.totalRevAct > 0 ? ((data.rev_spa_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+                    </span>
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between text-[9px]">
+                <span>Other Revenue</span>
+                <span className="font-bold">
+                  {formatRp(data.rev_oth_act)}{' '}
+                  <span className="text-sky-600 font-bold">
+                    ({data.totalRevAct > 0 ? ((data.rev_oth_act / data.totalRevAct) * 100).toFixed(1) : 0}%)
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
           {activeDept === "STAT_OCC" && (
             <div className="border-t border-slate-100 pt-2 space-y-1 text-[9px]">
               <div className="flex justify-between"><span>Rooms Available (Act)</span><span className="font-bold">{formatNum(data.avail_act)}</span></div>
@@ -342,20 +365,36 @@ export default function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} tickFormatter={(v) => !isRpFormat(activeDept) ? formatNum(v as number) : `Rp${((v as number) / 1000000).toFixed(0)}M`} />
-                <Tooltip cursor={{ fill: "#f1f5f9" }} formatter={(v: any) => !isRpFormat(activeDept) ? formatNum(Number(v)) : formatRp(Number(v))} contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "6px" }} />
+                <Tooltip 
+                  cursor={{ fill: "#f1f5f9" }} 
+                  formatter={(v: any) => !isRpFormat(activeDept) ? formatNum(Number(v)) : formatRp(Number(v))} 
+                  contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "6px" }} 
+                  itemStyle={{ color: "#0f172a" }} 
+                  labelStyle={{ color: "#64748b", fontWeight: "bold" }} 
+                />
                 <Legend iconType="plainline" wrapperStyle={{ fontSize: "9px", paddingTop: "10px", color: "#1e293b" }} />
                 {activeDept === "TOTAL_REVENUE" && isYTD ? (
                   <>
-                    <Bar dataKey="Room" name="Room" fill="#0ea5e9" barSize={10} radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="F&B" name="F&B" fill="#f59e0b" barSize={10} radius={[2, 2, 0, 0]} />
-                    {(data.rev_meet_act > 0 || data.rev_meet_bud > 0) && <Bar dataKey="Meet" name="Meeting" fill="#10b981" barSize={10} radius={[2, 2, 0, 0]} />}
-                    {(data.rev_spa_act > 0 || data.rev_spa_bud > 0) && <Bar dataKey="Spa" name="Spa" fill="#ec4899" barSize={10} radius={[2, 2, 0, 0]} />}
-                    <Bar dataKey="Others" name="Others" fill="#8b5cf6" barSize={10} radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="Room" name="Room" fill={getDeptColor("ROOM")} barSize={10} radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="F&B" name="F&B" fill={getDeptColor("FB")} barSize={10} radius={[2, 2, 0, 0]} />
+                    {(data.rev_meet_act > 0 || data.rev_meet_bud > 0) && <Bar dataKey="Meet" name="Meeting" fill={getDeptColor("MEETING")} barSize={10} radius={[2, 2, 0, 0]} />}
+                    {(data.rev_spa_act > 0 || data.rev_spa_bud > 0) && <Bar dataKey="Spa" name="Spa" fill={getDeptColor("SPA")} barSize={10} radius={[2, 2, 0, 0]} />}
+                    <Bar dataKey="Others" name="Others" fill={getDeptColor("OTHERS")} barSize={10} radius={[2, 2, 0, 0]} />
                   </>
                 ) : (
                   <>
-                    <Bar dataKey="Actual" name={`Actual ${yearStr}`} fill="#0ea5e9" barSize={dynamicBarSize} maxBarSize={30} radius={[2, 2, 0, 0]} />
-                    {showBudget && <Bar dataKey="Target" name={`Budget ${yearStr}`} fill="#cbd5e1" barSize={dynamicBarSize} maxBarSize={30} radius={[2, 2, 0, 0]} />}
+                    <Bar dataKey="Actual" name={`Actual ${yearStr}`} fill={dynamicBarColor} barSize={dynamicBarSize} maxBarSize={30} radius={[2, 2, 0, 0]}>
+                      {!isYTD && activeDept === "TOTAL_REVENUE" && barChartData.map((entry, index) => {
+                        let cellColor = dynamicBarColor;
+                        if (entry.name === "Room") cellColor = getDeptColor("ROOM");
+                        if (entry.name === "F&B") cellColor = getDeptColor("FB");
+                        if (entry.name === "Meet") cellColor = getDeptColor("MEETING");
+                        if (entry.name === "Spa") cellColor = getDeptColor("SPA");
+                        if (entry.name === "Oth") cellColor = getDeptColor("OTHERS");
+                        return <Cell key={`cell-web-act-${index}`} fill={cellColor} />;
+                      })}
+                    </Bar>
+                    {showBudget && <Bar dataKey="Target" name={`Budget ${yearStr}`} fill="#94a3b8" barSize={dynamicBarSize} maxBarSize={30} radius={[2, 2, 0, 0]} />}
                   </>
                 )}
               </BarChart>
@@ -431,7 +470,7 @@ export default function Dashboard() {
     setIsExporting(true);
     try {
       const logoData = activePropLogo ? await loadLogoData(activePropLogo) : null;
-      const pdf = new jsPDF("p", "mm", "a4");
+      const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
       const pageWidth = pdf.internal.pageSize.getWidth();
       const margin = 12;
       let yPos = 38; 
@@ -473,10 +512,10 @@ export default function Dashboard() {
       const chartEl = document.getElementById(`chart-${selectedYear}`);
       if (chartEl) {
         const canvas = await html2canvas(chartEl, { scale: 2, backgroundColor: "#ffffff", logging: false });
-        const imgData = canvas.toDataURL("image/png");
+        const imgData = canvas.toDataURL("image/jpeg", 0.8);
         const imgWidth = pageWidth - margin * 2;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        pdf.addImage(imgData, "PNG", margin, yPos, imgWidth, imgHeight);
+        pdf.addImage(imgData, "JPEG", margin, yPos, imgWidth, imgHeight);
         yPos += imgHeight + 15;
       }
 
@@ -490,10 +529,10 @@ export default function Dashboard() {
           yPos += 5;
 
           const canvas2 = await html2canvas(chartEl2, { scale: 2, backgroundColor: "#ffffff", logging: false });
-          const imgData2 = canvas2.toDataURL("image/png");
+          const imgData2 = canvas2.toDataURL("image/jpeg", 0.8);
           const imgWidth2 = pageWidth - margin * 2;
           const imgHeight2 = (canvas2.height * imgWidth2) / canvas2.width;
-          pdf.addImage(imgData2, "PNG", margin, yPos, imgWidth2, imgHeight2);
+          pdf.addImage(imgData2, "JPEG", margin, yPos, imgWidth2, imgHeight2);
         }
       }
 
@@ -509,7 +548,7 @@ export default function Dashboard() {
 
   const handleExportAllPDF = async () => {
     setIsExportingAll(true);
-    const pdf = new jsPDF("p", "mm", "a4");
+    const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const margin = 12;
     let pageNum = 1;
@@ -550,17 +589,17 @@ export default function Dashboard() {
         root.render(<ExportChartPanel data={mainData} deptId={deptA.id} yearStr={selectedYear} month={selectedMonth} isYTD={isYTD} dbData={dbData} activePropId={activePropId} height={420} />);
         await new Promise((resolve) => setTimeout(resolve, 300));
         let canvas = await html2canvas(offScreenDiv, { scale: 2, backgroundColor: "#ffffff", logging: false });
-        let imgData = canvas.toDataURL("image/png");
+        let imgData = canvas.toDataURL("image/jpeg", 0.8);
         let imgWidth = pageWidth - (margin * 2);
         let imgHeight = (canvas.height * imgWidth) / canvas.width;
-        pdf.addImage(imgData, "PNG", margin, 38, imgWidth, imgHeight);
+        pdf.addImage(imgData, "JPEG", margin, 38, imgWidth, imgHeight);
 
         if (deptB) {
           root.render(<ExportChartPanel data={mainData} deptId={deptB.id} yearStr={selectedYear} month={selectedMonth} isYTD={isYTD} dbData={dbData} activePropId={activePropId} height={420} />);
           await new Promise((resolve) => setTimeout(resolve, 300));
           canvas = await html2canvas(offScreenDiv, { scale: 2, backgroundColor: "#ffffff", logging: false });
-          imgData = canvas.toDataURL("image/png");
-          pdf.addImage(imgData, "PNG", margin, 38 + imgHeight + 8, imgWidth, imgHeight);
+          imgData = canvas.toDataURL("image/jpeg", 0.8);
+          pdf.addImage(imgData, "JPEG", margin, 38 + imgHeight + 8, imgWidth, imgHeight);
         }
       }
 
